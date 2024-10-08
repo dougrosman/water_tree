@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Water Contract</title>
+    <style>
+        body {
+            background-color: lightblue;
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 20px;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            margin: 10px;
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.umd.min.js"></script>
+</head>
+<body>
+
+    <h1>Water Contract</h1>
+    <button id="connectWallet">Connect Wallet</button>
+    <button id="getWater">Get Water</button>
+    <p id="waterBalance">Water Balance: 0</p>
+
+    <script>
+        const waterContractAddress = '0x87B389DFEf2145E3eb4ba9Df66E0a09654616b62';
+        const waterAbi = [
+            "function getWater() public",
+            "function checkBalance() public view returns (uint256)"
+        ];
+
+        let provider;
+        let signer;
+        let waterContract;
+
+        document.getElementById('connectWallet').addEventListener('click', async () => {
+            if (window.ethereum) {
+                provider = new ethers.BrowserProvider(window.ethereum);
+                await provider.send("eth_requestAccounts", []);
+                signer = await provider.getSigner();
+                waterContract = new ethers.Contract(waterContractAddress, waterAbi, signer);
+                updateWaterBalance();
+            } else {
+                alert('Please install MetaMask!');
+            }
+        });
+
+        document.getElementById('getWater').addEventListener('click', async () => {
+            if (waterContract) {
+                const tx = await waterContract.getWater();
+                await tx.wait();
+                updateWaterBalance();
+            } else {
+                alert('Please connect your wallet first!');
+            }
+        });
+
+        async function updateWaterBalance() {
+            if (waterContract) {
+                const balance = await waterContract.checkBalance();
+                document.getElementById('waterBalance').textContent = `Water Balance: ${balance}`;
+            }
+        }
+    </script>
+
+</body>
+</html>
